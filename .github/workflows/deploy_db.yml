@@ -14,7 +14,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y curl gnupg2 apt-transport-https
 
-          # Import the Microsoft GPG key (non-interactive method)
+          # Import the Microsoft GPG key
           curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
 
           # Add the Microsoft SQL Server tools repository for Ubuntu 24.04
@@ -25,12 +25,10 @@ jobs:
 
           # Install mssql-tools and unixodbc-dev
           sudo apt-get install -y mssql-tools18 unixodbc-dev
-
-          # Add mssql-tools to PATH
-          echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
-          source ~/.bashrc
       - name: Run T-SQL script
         run: |
+          # Explicitly set PATH to include mssql-tools18
+          export PATH="$PATH:/opt/mssql-tools18/bin"
           sqlcmd -S ${{ secrets.SECRET_DB_HOST }} \
                  -U ${{ secrets.SECRET_DB_USER }} \
                  -P ${{ secrets.SECRET_DB_PASS }} \
