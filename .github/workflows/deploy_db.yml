@@ -30,6 +30,7 @@ jobs:
 
   deploy-production:
     runs-on: windows-latest
+    needs: deploy-development  # Ensures this runs after deploy-development succeeds
     environment: production
     steps:
       - name: Checkout code
@@ -53,14 +54,14 @@ jobs:
       - name: Debug print variables
         shell: cmd
         env:
-          SQL_SERVER : ${{ secrets.SECRET_DB_HOST_PROD }}
+          SQL_SERVER: ${{ secrets.SECRET_DB_HOST_PROD }}
           SQL_USER: ${{ secrets.SECRET_DB_USER_PROD }}
           SQL_PASSWORD: ${{ secrets.SECRET_DB_PASS_PROD }}
         run: |
           echo "SQL_SERVER: %SQL_SERVER%"
           echo "SQL_USER: %SQL_USER%"
-          echo "SQL_PASSWORD: ***"  # Masked for security
-          echo "Command: sqlcmd -S %SQL_SERVER% -U %SQL_USER% -P [masked] -Q \"SELECT 1 AS connection_test;\""
+          echo "SQL_PASSWORD: ***"
+          echo "Full command: sqlcmd -S %SQL_SERVER% -U %SQL_USER% -P [masked] -Q \"SELECT @@VERSION;\""
 
       - name: Test SQL Server connection
         shell: cmd
@@ -69,9 +70,9 @@ jobs:
           SQL_USER: ${{ secrets.SECRET_DB_USER_PROD }}
           SQL_PASSWORD: ${{ secrets.SECRET_DB_PASS_PROD }}
         run: |
-          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -Q "SELECT @@VERSION;" -b -o version_output.log || echo "Connection failed"
+          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -Q "SELECT @@VERSION;" -b -o version_output.log || echo "Connection failed with user %SQL_USER%"
           type version_output.log 2>nul || echo "No version output"
-          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -Q "SELECT 1 AS connection_test;" -b -o test_output.log || echo "Test query failed"
+          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -Q "SELECT 1 AS connection_test;" -b -o test_output.log || echo "Test query failed with user %SQL_USER%"
           type test_output.log 2>nul || echo "No test output"
 
       - name: Run SQL Script
@@ -81,5 +82,5 @@ jobs:
           SQL_USER: ${{ secrets.SECRET_DB_USER_PROD }}
           SQL_PASSWORD: ${{ secrets.SECRET_DB_PASS_PROD }}
         run: |
-          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -i init_database.sql -b -o sql_output.log || echo "Script execution failed"
+          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -i init_database.sql -b -o sql_output.log || echo "Script execution failed with user %SQL_USER%"
           type sql_output.log 2>nul || echo "No script output"
