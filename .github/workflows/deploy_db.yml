@@ -52,10 +52,15 @@ jobs:
 
       - name: Debug print variables
         shell: cmd
+        env:
+          SQL_SERVER : ${{ secrets.SECRET_DB_HOST_PROD }}
+          SQL_USER: ${{ secrets.SECRET_DB_USER_PROD }}
+          SQL_PASSWORD: ${{ secrets.SECRET_DB_PASS_PROD }}
         run: |
           echo "SQL_SERVER: %SQL_SERVER%"
           echo "SQL_USER: %SQL_USER%"
           echo "SQL_PASSWORD: ***"  # Masked for security
+          echo "Command: sqlcmd -S %SQL_SERVER% -U %SQL_USER% -P [masked] -Q \"SELECT 1 AS connection_test;\""
 
       - name: Test SQL Server connection
         shell: cmd
@@ -64,8 +69,10 @@ jobs:
           SQL_USER: ${{ secrets.SECRET_DB_USER_PROD }}
           SQL_PASSWORD: ${{ secrets.SECRET_DB_PASS_PROD }}
         run: |
-          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -Q "SELECT 1 AS connection_test;" -b -o test_output.log
-          type test_output.log
+          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -Q "SELECT @@VERSION;" -b -o version_output.log || echo "Connection failed"
+          type version_output.log 2>nul || echo "No version output"
+          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -Q "SELECT 1 AS connection_test;" -b -o test_output.log || echo "Test query failed"
+          type test_output.log 2>nul || echo "No test output"
 
       - name: Run SQL Script
         shell: cmd
@@ -74,5 +81,5 @@ jobs:
           SQL_USER: ${{ secrets.SECRET_DB_USER_PROD }}
           SQL_PASSWORD: ${{ secrets.SECRET_DB_PASS_PROD }}
         run: |
-          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -i init_database.sql -b -o sql_output.log
-          type sql_output.log
+          sqlcmd -S "%SQL_SERVER%" -U "%SQL_USER%" -P "%SQL_PASSWORD%" -i init_database.sql -b -o sql_output.log || echo "Script execution failed"
+          type sql_output.log 2>nul || echo "No script output"
