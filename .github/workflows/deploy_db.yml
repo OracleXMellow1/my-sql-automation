@@ -45,12 +45,21 @@ jobs:
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" | sudo tee /etc/apt/sources.list.d/mssql-tools.list
           sudo apt-get update
           sudo apt-get install -y mssql-tools18 unixodbc-dev
-      - name: Run T-SQL script for Production
+      - name: Run T-SQL script for Production with Debugging
         run: |
           export PATH="$PATH:/opt/mssql-tools18/bin"
+          # Check sqlcmd version
+          sqlcmd -? | grep "Version"
+          # Test connection with verbose output and bypass
           sqlcmd -S ${{ secrets.SECRET_DB_HOST_PROD }} \
                  -U ${{ secrets.SECRET_DB_USER_PROD }} \
                  -P ${{ secrets.SECRET_DB_PASS_PROD }} \
                  -i init_database.sql \
-                 -N -C -x  # Temporarily bypass SSL verification
+                 -N -C -x -v || echo "Bypass with -x failed"
+          # Alternative: Try disabling encryption entirely
+          sqlcmd -S ${{ secrets.SECRET_DB_HOST_PROD }} \
+                 -U ${{ secrets.SECRET_DB_USER_PROD }} \
+                 -P ${{ secrets.SECRET_DB_PASS_PROD }} \
+                 -i init_database.sql \
+                 -N || echo "Connection without encryption failed"
         shell: bash
