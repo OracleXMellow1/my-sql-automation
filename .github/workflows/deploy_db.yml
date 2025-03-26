@@ -28,7 +28,7 @@ jobs:
                  -U ${{ secrets.SECRET_DB_USER }} \
                  -P ${{ secrets.SECRET_DB_PASS }} \
                  -i init_database.sql \
-                 -N -C
+                 -C
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -54,4 +54,4 @@ jobs:
                  -U ${{ secrets.SECRET_DB_USER_PROD }} \
                  -P ${{ secrets.SECRET_DB_PASS_PROD }} \
                  -i init_database.sql \
-                 -N -C
+                 -C
