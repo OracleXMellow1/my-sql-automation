@@ -5,9 +5,9 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # 1) Development Deployment
-  dev-deployment:
+  deploy-development:
     runs-on: ubuntu-latest
+    environment: development  # Define the development environment
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
@@ -21,28 +21,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mssql-tools18 unixodbc-dev
 
-      - name: Run T-SQL script on Development
+      - name: Run T-SQL script for Development
         run: |
           export PATH="$PATH:/opt/mssql-tools18/bin"
-          sqlcmd -S ${{ secrets.SECRET_DB_HOST_DEV }} \
-                 -U ${{ secrets.SECRET_DB_USER_DEV }} \
-                 -P ${{ secrets.SECRET_DB_PASS_DEV }} \
+          sqlcmd -S ${{ secrets.DEV_DB_HOST }} \
+                 -U ${{ secrets.DEV_DB_USER }} \
+                 -P ${{ secrets.DEV_DB_PASS }} \
                  -i init_database.sql \
                  -N -C
 
-  # 2) Production Deployment - waits for dev-deployment to finish
-  prod-deployment:
-    needs: [ dev-deployment ]
+  deploy-production:
     runs-on: ubuntu-latest
-    # Optional: Use GitHub environment protection rules for production
-    # environment:
-    #   name: production
+    needs: deploy-development  # Wait for the development job to complete
+    environment: production    # Define the production environment with approval
     steps:
-      - name: Wait for Approval
-        uses: fjogeleit/approval-action@v1.0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Check out repo
         uses: actions/checkout@v3
 
@@ -55,12 +47,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mssql-tools18 unixodbc-dev
 
-      - name: Run T-SQL script on Production
+      - name: Run T-SQL script for Production
         run: |
           export PATH="$PATH:/opt/mssql-tools18/bin"
-          sqlcmd -S ${{ secrets.SECRET_DB_HOST_PROD }} \
-                 -U ${{ secrets.SECRET_DB_USER_PROD }} \
-                 -P ${{ secrets.SECRET_DB_PASS_PROD }} \
+          sqlcmd -S ${{ secrets.PROD_DB_HOST }} \
+                 -U ${{ secrets.PROD_DB_USER }} \
+                 -P ${{ secrets.PROD_DB_PASS }} \
                  -i init_database.sql \
                  -N -C
-                 
