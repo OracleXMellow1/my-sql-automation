@@ -12,7 +12,7 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Install SQL Server Tools (sqlcmd)
+      - name: Install SQL Server Tools (sqlcmd) and Trust Certificate
         run: |
           sudo apt-get update
           sudo apt-get install -y curl gnupg2 apt-transport-https
@@ -20,6 +20,9 @@ jobs:
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" | sudo tee /etc/apt/sources.list.d/mssql-tools.list
           sudo apt-get update
           sudo apt-get install -y mssql-tools18 unixodbc-dev
+          # Trust the SQL Server certificate
+          sudo cp sqlserver.cer /usr/local/share/ca-certificates/sqlserver.crt
+          sudo update-ca-certificates
 
       - name: Run T-SQL script for Development
         run: |
@@ -28,7 +31,7 @@ jobs:
                  -U ${{ secrets.SECRET_DB_USER }} \
                  -P ${{ secrets.SECRET_DB_PASS }} \
                  -i init_database.sql \
-                 -C
+                 -N -C
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -38,7 +41,7 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Install SQL Server Tools (sqlcmd)
+      - name: Install SQL Server Tools (sqlcmd) and Trust Certificate
         run: |
           sudo apt-get update
           sudo apt-get install -y curl gnupg2 apt-transport-https
@@ -46,6 +49,9 @@ jobs:
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" | sudo tee /etc/apt/sources.list.d/mssql-tools.list
           sudo apt-get update
           sudo apt-get install -y mssql-tools18 unixodbc-dev
+          # Trust the SQL Server certificate
+          sudo cp sqlserver.cer /usr/local/share/ca-certificates/sqlserver.crt
+          sudo update-ca-certificates
 
       - name: Run T-SQL script for Production
         run: |
@@ -54,4 +60,4 @@ jobs:
                  -U ${{ secrets.SECRET_DB_USER_PROD }} \
                  -P ${{ secrets.SECRET_DB_PASS_PROD }} \
                  -i init_database.sql \
-                 -C
+                 -N -C
