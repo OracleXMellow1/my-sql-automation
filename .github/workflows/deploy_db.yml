@@ -1,4 +1,5 @@
 name: Deploy Database
+
 on:
   push:
     branches: [ "main" ]
@@ -46,11 +47,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mssql-tools18 unixodbc-dev
       
-      - name: Run T-SQL script for Production
+      - name: Trim Credentials and Run T-SQL script for Production
+        env:
+          SECRET_DB_USER: ${{ secrets.SECRET_DB_USER_PROD }}
+          SECRET_DB_PASS: ${{ secrets.SECRET_DB_PASS_PROD }}
         run: |
           export PATH="$PATH:/opt/mssql-tools18/bin"
+          
+          # Trim whitespace from credentials
+          DB_USER=$(echo "$SECRET_DB_USER" | tr -d '\n' | xargs)
+          DB_PASS=$(echo "$SECRET_DB_PASS" | tr -d '\n' | xargs)
+          
           sqlcmd -S "0.tcp.in.ngrok.io,15874" \
-                 -U "${{ secrets.SECRET_DB_USER_PROD }}" \
-                 -P "${{ secrets.SECRET_DB_PASS_PROD }}" \
+                 -U "$DB_USER" \
+                 -P "$DB_PASS" \
                  -i init_database.sql \
                  -N -C
