@@ -1,11 +1,20 @@
 name: Deploy Database
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy to environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - production
 
 jobs:
   deploy-development:
+    if: github.event.inputs.environment == 'development'
     runs-on: ubuntu-latest
     environment: development
     steps:
@@ -31,7 +40,7 @@ jobs:
                  -N -C
 
   deploy-production:
-    needs: deploy-development
+    if: github.event.inputs.environment == 'production'
     runs-on: ubuntu-latest
     environment: production
     steps:
