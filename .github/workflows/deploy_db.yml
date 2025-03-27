@@ -2,19 +2,9 @@ name: Deploy Database
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deploy to environment'
-        required: true
-        default: 'development'
-        type: choice
-        options:
-          - development
-          - production
 
 jobs:
   deploy-development:
-    if: github.event.inputs.environment == 'development'
     runs-on: ubuntu-latest
     environment: development
     steps:
@@ -38,9 +28,8 @@ jobs:
                  -P "${{ secrets.SECRET_DB_PASS }}" \
                  -i init_database.sql \
                  -N -C
-
   deploy-production:
-    if: github.event.inputs.environment == 'production'
+    needs: deploy-development
     runs-on: ubuntu-latest
     environment: production
     steps:
