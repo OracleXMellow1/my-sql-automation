@@ -2,16 +2,14 @@
 IF NOT EXISTS (
     SELECT name 
     FROM sys.databases 
-    WHERE name = N'AutoTest'
+    WHERE name = N'AutoTest_ML_27March'
 )
 BEGIN
-    CREATE DATABASE [AutoTest_ML];
+    CREATE DATABASE [AutoTest_ML_27March];
 END;
 GO
-
-USE [AutoTest_ML];
+USE [AutoTest_ML_27March];
 GO
-
 -- 2. Create the [user] table if it doesn't exist
 IF NOT EXISTS (
     SELECT * 
@@ -26,7 +24,6 @@ BEGIN
     );
 END;
 GO
-
 -- 3. Create a stored procedure that inserts rows
 IF EXISTS (
     SELECT * 
@@ -38,7 +35,6 @@ BEGIN
     DROP PROCEDURE [dbo].[InsertUser];
 END;
 GO
-
 CREATE PROCEDURE [dbo].[InsertUser]
     @Name VARCHAR(50),
     @Surname VARCHAR(50),
@@ -49,7 +45,6 @@ BEGIN
     VALUES (@Name, @Surname, @Email);
 END;
 GO
-
 -- 4. Insert sample data
 EXEC [dbo].[InsertUser] 'John', 'Doe', 'john.doe@example.com';
 EXEC [dbo].[InsertUser] 'Jane', 'Smith', 'jane.smith@example.org';
