@@ -9,7 +9,7 @@ BEGIN
 END;
 GO
 
-USE [AutoTest];
+USE [AutoTest_ML_27March];
 GO
 
 -- 2. Create the [user] table if it doesn't exist
