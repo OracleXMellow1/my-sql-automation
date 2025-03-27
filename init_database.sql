@@ -5,7 +5,7 @@ IF NOT EXISTS (
     WHERE name = N'AutoTest'
 )
 BEGIN
-    CREATE DATABASE [AutoTest];
+    CREATE DATABASE [AutoTest_ML_27March];
 END;
 GO
 
