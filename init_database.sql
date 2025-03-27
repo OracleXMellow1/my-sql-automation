@@ -5,11 +5,11 @@ IF NOT EXISTS (
     WHERE name = N'AutoTest'
 )
 BEGIN
-    CREATE DATABASE [AutoTest_ML_27March];
+    CREATE DATABASE [AutoTest_ML];
 END;
 GO
 
-USE [AutoTest_ML_27March];
+USE [AutoTest_ML];
 GO
 
 -- 2. Create the [user] table if it doesn't exist
