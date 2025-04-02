@@ -3,23 +3,28 @@ name: Deploy Database
 on:
   workflow_dispatch:
 
+# Define common steps using YAML anchors for templating
+common-checkout: &checkout
+  - name: Check out repo
+    uses: actions/checkout@v3
+
+common-install-sqlcmd: &install_sqlcmd
+  - name: Install SQL Server Tools (sqlcmd)
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y curl gnupg2 apt-transport-https
+      curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" | sudo tee /etc/apt/sources.list.d/mssql-tools.list
+      sudo apt-get update
+      sudo apt-get install -y mssql-tools18 unixodbc-dev
+
 jobs:
   deploy-development:
     runs-on: ubuntu-latest
     environment: development
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v3
-      
-      - name: Install SQL Server Tools (sqlcmd)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl gnupg2 apt-transport-https
-          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" | sudo tee /etc/apt/sources.list.d/mssql-tools.list
-          sudo apt-get update
-          sudo apt-get install -y mssql-tools18 unixodbc-dev
-      
+      - <<: *checkout
+      - <<: *install_sqlcmd
       - name: Run T-SQL script for Development
         run: |
           export PATH="$PATH:/opt/mssql-tools18/bin"
@@ -28,23 +33,14 @@ jobs:
                  -P "${{ secrets.SECRET_DB_PASS }}" \
                  -i init_database.sql \
                  -N -C
+
   deploy-production:
     needs: deploy-development
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v3
-      
-      - name: Install SQL Server Tools (sqlcmd)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl gnupg2 apt-transport-https
-          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" | sudo tee /etc/apt/sources.list.d/mssql-tools.list
-          sudo apt-get update
-          sudo apt-get install -y mssql-tools18 unixodbc-dev
-      
+      - <<: *checkout
+      - <<: *install_sqlcmd
       - name: Trim Credentials and Run T-SQL script for Production
         env:
           SECRET_DB_USER: ${{ secrets.SECRET_DB_USER_PROD }}
