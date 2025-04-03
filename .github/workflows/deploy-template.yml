@@ -6,10 +6,9 @@ on:
       environment:
         required: true
         type: string
+    secrets:
       db_host:
         required: true
-        type: string
-    secrets:
       db_user:
         required: true
       db_pass:
@@ -37,10 +36,11 @@ jobs:
           export PATH="$PATH:/opt/mssql-tools18/bin"
           
           # Trim whitespace from credentials
+          DB_HOST=$(echo "${{ secrets.db_host }}" | tr -d '\n' | xargs)
           DB_USER=$(echo "${{ secrets.db_user }}" | tr -d '\n' | xargs)
           DB_PASS=$(echo "${{ secrets.db_pass }}" | tr -d '\n' | xargs)
           
-          sqlcmd -S "${{ inputs.db_host }}" \
+          sqlcmd -S "$DB_HOST" \
                  -U "$DB_USER" \
                  -P "$DB_PASS" \
                  -i init_database.sql
