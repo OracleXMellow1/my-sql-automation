@@ -1,0 +1,24 @@
+name: Database Deployment Pipeline
+
+on: [workflow_dispatch]
+
+jobs:
+  dev-deployment:
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      environment: dev
+    secrets:
+      SQL_SERVER: ${{ secrets.DEV_SQL_SERVER }}
+      SQL_USER: ${{ secrets.DEV_SQL_USER }}
+      SQL_PASSWORD: ${{ secrets.DEV_SQL_PASSWORD }}
+
+  prod-deployment:
+    needs: dev-deployment
+    if: success()
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      environment: production
+    secrets:
+      SQL_SERVER: ${{ secrets.PROD_SQL_SERVER }}
+      SQL_USER: ${{ secrets.PROD_SQL_USER }}
+      SQL_PASSWORD: ${{ secrets.PROD_SQL_PASSWORD }}
