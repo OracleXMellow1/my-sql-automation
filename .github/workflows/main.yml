@@ -8,9 +8,9 @@ jobs:
     with:
       environment: dev
     secrets:
-      SQL_SERVER: ${{ secrets.DEV_SQL_SERVER }}
-      SQL_USER: ${{ secrets.DEV_SQL_USER }}
-      SQL_PASSWORD: ${{ secrets.DEV_SQL_PASSWORD }}
+      SQL_SERVER: ${{ secrets.DB_SQL_SERVER }}
+      SQL_USER: ${{ secrets.DB_SQL_USER }}
+      SQL_PASSWORD: ${{ secrets.DB_SQL_PASSWORD }}
 
   prod-deployment:
     needs: dev-deployment
