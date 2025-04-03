@@ -8,9 +8,6 @@ jobs:
     uses: ./.github/workflows/deploy-sql-template.yml
     with:
       environment_name: development
-      db_host: ${{ secrets.SECRET_DB_HOST }}  # Pass as a plain value here
-      db_user: ${{ secrets.SECRET_DB_USER }}  # Pass as a plain value here
-      db_pass: ${{ secrets.SECRET_DB_PASS }}  # Pass as a plain value here
       sql_script: init_database.sql
     secrets:
       SECRET_DB_HOST: ${{ secrets.SECRET_DB_HOST }}
@@ -22,9 +19,6 @@ jobs:
     uses: ./.github/workflows/deploy-sql-template.yml
     with:
       environment_name: production
-      db_host: "0.tcp.in.ngrok.io,15874"      # Hardcoded, no secret needed
-      db_user: ${{ secrets.SECRET_DB_USER_PROD }}  # Pass as a plain value here
-      db_pass: ${{ secrets.SECRET_DB_PASS_PROD }}  # Pass as a plain value here
       sql_script: init_database.sql
     secrets:
       SECRET_DB_USER_PROD: ${{ secrets.SECRET_DB_USER_PROD }}
