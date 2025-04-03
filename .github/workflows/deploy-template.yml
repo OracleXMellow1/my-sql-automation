@@ -1,0 +1,76 @@
+name: Deploy to Environment
+
+# Define this as a reusable workflow
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'The target environment (e.g., dev or production)'
+        required: true
+        type: string
+    secrets:
+      SQL_SERVER:
+        description: 'SQL Server hostname'
+        required: true
+      SQL_USER:
+        description: 'SQL Server username'
+        required: true
+      SQL_PASSWORD:
+        description: 'SQL Server password'
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl gnupg
+
+      - name: Add Microsoft SQL Server repository
+        run: |
+          UBUNTU_VERSION=$(lsb_release -rs)
+          if [[ "$UBUNTU_VERSION" == "24.04" ]]; then
+            echo "Using Ubuntu 22.04 packages for compatibility"
+            UBUNTU_VERSION="22.04"
+            CODENAME="jammy"
+          else
+            CODENAME=$(lsb_release -cs)
+          fi
+          curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/ubuntu/$UBUNTU_VERSION/prod $CODENAME main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
+
+      - name: Install SQL Server tools
+        run: |
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools unixodbc-dev
+          echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> $GITHUB_ENV
+          echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+
+      - name: Verify SQLCMD installation
+        run: |
+          /opt/mssql-tools/bin/sqlcmd -?
+          echo "PATH contains: $PATH"
+
+      - name: Test SQL Server connection
+        run: |
+          /opt/mssql-tools/bin/sqlcmd -S "${{ secrets.SQL_SERVER }}" -U "${{ secrets.SQL_USER }}" -P "${{ secrets.SQL_PASSWORD }}" -Q "SELECT 1 AS connection_test;" -b -o test_output.log
+          cat test_output.log
+
+      - name: Run SQL Script
+        run: |
+          /opt/mssql-tools/bin/sqlcmd -S "${{ secrets.SQL_SERVER }}" -U "${{ secrets.SQL_USER }}" -P "${{ secrets.SQL_PASSWORD }}" -d master -i setup.sql -b -o sql_output.log
+          if grep -q "Msg [0-9]\+, Level [0-9]\+, State [0-9]\+" sql_output.log; then
+            echo "Error: SQL script execution failed. Check sql_output.log for details."
+            cat sql_output.log
+            exit 1
+          else
+            echo "SQL script executed successfully."
+            cat sql_output.log
+          fi
