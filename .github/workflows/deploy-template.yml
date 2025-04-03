@@ -36,9 +36,9 @@ jobs:
           export PATH="$PATH:/opt/mssql-tools18/bin"
           
           # Trim whitespace from credentials
-          DB_HOST=$(echo "${{ secrets.db_host }}" | tr -d '\n' | xargs)
-          DB_USER=$(echo "${{ secrets.db_user }}" | tr -d '\n' | xargs)
-          DB_PASS=$(echo "${{ secrets.db_pass }}" | tr -d '\n' | xargs)
+          DB_HOST=$(echo "${{ secrets.SECRET_DB_HOST }}" | tr -d '\n' | xargs)
+          DB_USER=$(echo "${{ secrets.SECRET_DB_USER }}" | tr -d '\n' | xargs)
+          DB_PASS=$(echo "${{ secrets.SECRET_DB_PASS }}" | tr -d '\n' | xargs)
           
           sqlcmd -S "$DB_HOST" \
                  -U "$DB_USER" \
