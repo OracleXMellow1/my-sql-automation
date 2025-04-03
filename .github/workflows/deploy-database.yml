@@ -8,8 +8,8 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     with:
       environment: development
-      db_host: ${{ secrets.SECRET_DB_HOST }}
     secrets:
+      db_host: ${{ secrets.SECRET_DB_HOST }}
       db_user: ${{ secrets.SECRET_DB_USER }}
       db_pass: ${{ secrets.SECRET_DB_PASS }}
   
@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     with:
       environment: production
-      db_host: "0.tcp.in.ngrok.io,10901"
     secrets:
+      db_host: "0.tcp.in.ngrok.io,10901"
       db_user: ${{ secrets.SECRET_DB_USER_PROD }}
       db_pass: ${{ secrets.SECRET_DB_PASS_PROD }}
