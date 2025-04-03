@@ -18,10 +18,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
-      
+
       - name: Install SQL Server Tools (sqlcmd)
         run: |
           sudo apt-get update
@@ -30,17 +31,14 @@ jobs:
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" | sudo tee /etc/apt/sources.list.d/mssql-tools.list
           sudo apt-get update
           sudo apt-get install -y mssql-tools18 unixodbc-dev
-      
-      - name: Trim Credentials and Run T-SQL script
+
+      - name: Run T-SQL script
         run: |
+          # Add mssql-tools to PATH so we can use sqlcmd directly
           export PATH="$PATH:/opt/mssql-tools18/bin"
-          
-          # Trim whitespace from credentials
-          DB_HOST=$(echo "${{ secrets.SECRET_DB_HOST }}" | tr -d '\n' | xargs)
-          DB_USER=$(echo "${{ secrets.SECRET_DB_USER }}" | tr -d '\n' | xargs)
-          DB_PASS=$(echo "${{ secrets.SECRET_DB_PASS }}" | tr -d '\n' | xargs)
-          
-          sqlcmd -S "$DB_HOST" \
-                 -U "$DB_USER" \
-                 -P "$DB_PASS" \
+
+          # No trimming—just use the secrets directly
+          sqlcmd -S "${{ secrets.db_host }}" \
+                 -U "${{ secrets.db_user }}" \
+                 -P "${{ secrets.db_pass }}" \
                  -i init_database.sql
