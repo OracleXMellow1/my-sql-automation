@@ -1,6 +1,5 @@
 name: Deploy to Environment
 
-# Define this as a reusable workflow
 on:
   workflow_call:
     inputs:
@@ -65,7 +64,7 @@ jobs:
 
       - name: Run SQL Script
         run: |
-          /opt/mssql-tools/bin/sqlcmd -S "${{ secrets.SQL_SERVER }}" -U "${{ secrets.SQL_USER }}" -P "${{ secrets.SQL_PASSWORD }}" -d master -i setup.sql -b -o sql_output.log
+          /opt/mssql-tools/bin/sqlcmd -S "${{ secrets.SQL_SERVER }}" -U "${{ secrets.SQL_USER }}" -P "${{ secrets.SQL_PASSWORD }}" -d master -i init_database.sql -b -o sql_output.log
           if grep -q "Msg [0-9]\+, Level [0-9]\+, State [0-9]\+" sql_output.log; then
             echo "Error: SQL script execution failed. Check sql_output.log for details."
             cat sql_output.log
