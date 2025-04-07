@@ -26,7 +26,8 @@ BEGIN
 END;
 GO
 
--- 3. Create a stored procedure that inserts rows with TRY...CATCH error handling
+-- 3. Create a stored procedure that inserts rows with TRY...CATCH 
+--    but without returning explicit error details
 IF EXISTS (
     SELECT * 
     FROM sys.objects 
@@ -49,18 +50,13 @@ BEGIN
         VALUES (@Name, @Surname, @Email);
     END TRY
     BEGIN CATCH
-        SELECT 
-            ERROR_NUMBER() AS ErrorNumber,
-            ERROR_SEVERITY() AS ErrorSeverity,
-            ERROR_STATE() AS ErrorState,
-            ERROR_PROCEDURE() AS ErrorProcedure,
-            ERROR_LINE() AS ErrorLine,
-            ERROR_MESSAGE() AS ErrorMessage;
+        -- Error details removed. This block is empty (or could log errors).
+        -- No SELECT or PRINT statement here, so it won't return error info.
     END CATCH;
 END;
 GO
 
--- 4. Insert sample data
+-- 4. Insert sample data (will complete silently if valid)
 EXEC [dbo].[InsertUser] 'John', 'Doe', 'john.doe@example.com';
 EXEC [dbo].[InsertUser] 'Jane', 'Smith', 'jane.smith@example.org';
 GO
