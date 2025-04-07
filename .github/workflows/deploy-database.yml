@@ -19,6 +19,6 @@ jobs:
     with:
       environment: "production"
     secrets:
-      db_host: "0.tcp.in.ngrok.io,10901"
+      db_host: "0.tcp.in.ngrok.io,15900"
       db_user: ${{ secrets.SECRET_DB_USER_PROD }}
       db_pass: ${{ secrets.SECRET_DB_PASS_PROD }}
