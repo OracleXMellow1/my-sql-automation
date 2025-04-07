@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy-development:
-    uses: ./.github/workflows/deploy_db_reusable.yml
+    uses: ./.github/workflows/deploy-template.yml
     with:
       environment: "development"
     secrets:
