@@ -18,7 +18,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
@@ -34,11 +33,5 @@ jobs:
 
       - name: Run T-SQL script
         run: |
-          # Add mssql-tools to PATH so we can use sqlcmd directly
           export PATH="$PATH:/opt/mssql-tools18/bin"
-
-          # No trimming—just use the secrets directly
-          sqlcmd -S "${{ secrets.db_host }}" \
-                 -U "${{ secrets.db_user }}" \
-                 -P "${{ secrets.db_pass }}" \
-                 -i init_database.sql
+          sqlcmd -S "${{ secrets.db_host }}" -U "${{ secrets.db_user }}" -P "${{ secrets.db_pass }}" -i init_database.sql
